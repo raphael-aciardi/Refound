@@ -4,6 +4,8 @@ const expense = document.getElementById("expense")
 const category = document.getElementById("category")
 
 const expenseList = document.querySelector("ul")
+const expensesQuantity = document.querySelector("aside header p span")
+const expensesTotal = document.querySelector("aside header h2")
 
 amount.oninput = () => {
     value = amount.value.replace(/\D/g, "")
@@ -48,11 +50,65 @@ function expenseAdd(newExpense){
         expenseIcon.setAttribute("src", `img/${newExpense.category_id}.svg`)
         expenseIcon.setAttribute("alt", newExpense.category_name)
 
-        expenseItem.appendChild(expenseIcon)
+        
+        const expenseInfo = document.createElement("div")
+        expenseInfo.classList.add("expense-info")
+
+        const expenseName = document.createElement("strong")
+        expenseName.textContent = newExpense.expense
+        
+        const expenseCategory = document.createElement("span")
+        expenseCategory.textContent = newExpense.category_name
+        
+        const expenseAmout = document.createElement("span")
+        expenseAmout.classList.add("expense-amount")
+        expenseAmout.innerHTML = `<small>R$</small>${newExpense.amount.toUpperCase().replace("R$", "")}`
+
+        const removeIcon = document.createElement("img")
+        removeIcon.classList.add("remove-icon")
+        removeIcon.setAttribute("src", "img/remove.svg")
+        removeIcon.setAttribute("alt", "remover")
+
+        expenseInfo.append(expenseName, expenseCategory)
+
+        expenseItem.append(expenseIcon, expenseInfo, expenseAmout, removeIcon)
+
         expenseList.appendChild(expenseItem)
+
+        updateTotals()
 
     } catch (error){
         alert("Erro ao adicionar despesa")
         console.log(error)
+    }
+
+
+}
+
+function updateTotals() {
+    try {
+        const items = expenseList.children;
+        expensesQuantity.textContent = `${items.length} ${items.length > 1 ? "despesas" : "despesa"}`;
+
+        let total = 0;
+
+        for (let item = 0; item < items.length; item++) {
+            const itemAmount = items[item].querySelector(".expense-amount");
+            let value = itemAmount.textContent.replace(/[^\d,]/g, "").replace(",", ".");
+
+            value = parseFloat(value);
+            if (isNaN(value)) {
+                value = 0;
+            }
+            total += Number(value);
+        }
+    
+        total = formatCurrencyBRL(total).toUpperCase().replace("R$", "");  
+        
+        expensesTotal.innerHTML = `<small>R$</small> ${total}`;
+
+    } catch (error) {
+        alert("Erro ao atualizar totais");
+        console.log(error);
     }
 }
